@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Image Compressor",
+  "version": "1.0.0",
+  "description": "Compress and download all images from a page.",
+  "action": {
+    "default_title": "Compress Images"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "downloads"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
