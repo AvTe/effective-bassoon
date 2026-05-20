@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CleanCompress
 
-## Getting Started
+A modern, minimal, and premium Chrome Extension (Manifest V3) built with Next.js that allows you to easily scrape, bulk-compress, and download images from any webpage, including Google Drive folders and Google Photos albums.
 
-First, run the development server:
+---
 
+## Key Features
+
+* **📦 Bulk Image Compression**: Queue and compress multiple images simultaneously.
+* **⚡ High-Performance Client-Side Encoding**:
+  * Powered by `compressorjs` for highly optimized JPEG and WebP compression.
+  * Powered by `upng-js` for clean lossy/lossless PNG compression.
+* **🌐 Webpage & Google Drive Scraper**:
+  * Automatically scans the current active browser tab for images.
+  * Injects custom content scripts to scrape images from **Google Drive folders** and **Google Photos albums** with one click.
+* **🎛️ Precision Compression Controls**:
+  * **Quality Slider**: Set custom image quality (0% to 100%).
+  * **Max Dimension Constraint**: Set maximum width or height limits to resize images on-the-fly.
+  * **File Suffix Configuration**: Add a custom suffix to compressed files (e.g., `_min` or `-compressed`).
+* **🔍 Interactive Before/After Comparison**:
+  * Open a side-by-side comparative lightbox with an interactive slider to check image quality visually before downloading.
+* **🎨 Premium Dark/Light UI/UX**:
+  * Sleek glassmorphism look with smooth micro-animations.
+  * Dynamic dark mode toggle.
+  * Robust, overflow-free responsive design tailored specifically for Windows and macOS extension viewports.
+
+---
+
+## Tech Stack & Architecture
+
+* **Framework**: Next.js (configured for Static HTML Export).
+* **Styling**: Vanilla CSS with custom layout systems.
+* **Extension API**: Manifest V3 (using background service workers and scripting permissions).
+* **Compression Pipeline**:
+  * JPEG/WebP: `compressorjs`
+  * PNG: `upng-js`
+  * Zip Archiving: `jszip`
+
+---
+
+## Installation & Developer Setup
+
+### Prerequisites
+* [Node.js](https://nodejs.org) (v18 or higher recommended)
+* `npm` or `yarn`
+
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Run the Development Server
+To preview the UI in a local browser environment:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 3. Build & Package the Chrome Extension
+Chrome Web Store extensions do not allow folders prefixed with underscores (`_next`) or inline JavaScript scripts due to Content Security Policy (CSP) guidelines. 
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses a custom post-build pipeline to bundle and patch the extension automatically:
+```bash
+npm run build
+node rename-next.js
+```
 
-## Learn More
+This builds the static site, renames `_next` assets, extracts inline scripts to separate JS files, and updates references.
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Load the Extension into Google Chrome
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Toggle the **Developer mode** switch in the top right corner.
+3. Click the **Load unpacked** button in the top left.
+4. Select the **`out`** directory inside this project folder.
+5. The extension is now loaded and ready to use!
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Extension Assets & Manifest Config
+* **Manifest Entrypoint**: [public/manifest.json](file:///c:/Users/ASUS LAPTOP/Desktop/img-comp-ext/public/manifest.json)
+* **Injected Scraper Content Script**: [public/content.js](file:///c:/Users/ASUS LAPTOP/Desktop/img-comp-ext/public/content.js)
+* **Background Process Worker**: [public/background.js](file:///c:/Users/ASUS LAPTOP/Desktop/img-comp-ext/public/background.js)
+* **Static Assets (Icons & Favicons)**: Located in the `public/` and `src/app/` folders.

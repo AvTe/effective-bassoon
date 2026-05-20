@@ -212,6 +212,7 @@ input:checked + .sliderToggle:before {
 .resultsArea {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0;
   background: white;
 }
@@ -393,6 +394,7 @@ input:checked + .sliderToggle:before {
 .pendingArea {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   background: white;
 }
 
@@ -588,3 +590,17 @@ input:checked + .sliderToggle:before {
 :global(.dark) .actionBtn { background: #374151; color: #d1d5db; border: 1px solid #4b5563; }
 :global(.dark) .actionBtn:hover { background: #4b5563; color: white; }
 :global(.dark) .activeSettings { background: #4f46e5; color: white; border-color: #6366f1; }
+
+.statusText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+  width: 90px;
+  text-align: right;
+  text-transform: lowercase;
+}
+
+:global(.dark) .statusText {
+  color: #9ca3af;
+}

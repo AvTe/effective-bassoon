@@ -496,8 +496,8 @@ export default function Home() {
       />
 
       <div className={styles.header}>
-        <div className={styles.titleRow}>
-          <ImageIcon size={24} strokeWidth={1.5} color="#7c3aed" />
+        <div className={styles.titleRow} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="icon32.png" alt="CleanCompress Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
           <h1 className={styles.title}>CleanCompress</h1>
         </div>
         <div style={{flex: 1}} />
@@ -697,7 +697,7 @@ export default function Home() {
                         <div className={styles.processingBarFill} style={{ width: isCompressingState ? '70%' : item.status === 'waiting' ? '0%' : '100%' }}></div>
                       </div>
                     </div>
-                    <div className={styles.reduction} style={{ color: '#6b7280' }}>
+                    <div className={styles.statusText}>
                       {item.status}
                     </div>
                   </div>
