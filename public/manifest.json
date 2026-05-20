@@ -7,14 +7,14 @@
     "default_title": "Compress Images"
   },
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "permissions": [
     "activeTab",
     "tabs",
     "scripting",
-    "downloads"
+    "downloads",
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"

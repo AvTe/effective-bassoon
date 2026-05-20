@@ -3,6 +3,10 @@
         "/^npm run build ; node rename-next\\.js$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node -e \"\nconst fs = require\\('fs'\\);\n\nlet pageCss = fs\\.readFileSync\\('src/app/page\\.module\\.css', 'utf8'\\);\nconst darkModeCSS = \\\\`\n@media \\(prefers-color-scheme: dark\\) \\{\n  \\.container \\{ background-color: #1a1a1a; color: #f3f4f6; \\}\n  \\.header \\{ background: #1a1a1a; border-bottom: 1px solid #374151; \\}\n  \\.settingsPanel \\{ background: #1a1a1a; border-bottom: 1px solid #374151; \\}\n  \\.settingLabel \\{ color: #9ca3af; \\}\n  \\.inputField \\{ background: #374151; color: white; border: 1px solid #4b5563; \\}\n  \\.dropzone \\{ background: #1f2937; border-color: #4b5563; \\}\n  \\.dropzone p \\{ color: #9ca3af; \\}\n  \\.dropzone:hover \\{ background: #374151; border-color: #3b82f6; \\}\n  \\.pendingArea \\{ background: #1a1a1a; \\}\n  \\.resultItem \\{ border-bottom: 1px solid #374151; background: #1a1a1a; \\}\n  \\.resultsArea \\{ background: #1a1a1a; \\}\n  \\.thumbnail \\{ border: 1px solid #4b5563; background: #374151; \\}\n  \\.button \\{ background-color: #374151; color: #d1d5db; \\}\n  \\.button:hover \\{ background-color: #4b5563; \\}\n  \\.summaryBanner \\{ background-color: #064e3b; color: #ccfbf1; \\}\n  \\.summaryBannerError \\{ background-color: #7f1d1d; color: #fee2e2; \\}\n\\}\n\\\\`;\nfs\\.appendFileSync\\('src/app/page\\.module\\.css', darkModeCSS\\);\n\nlet globalsCss = fs\\.readFileSync\\('src/app/globals\\.css', 'utf8'\\);\nconst globalsDarkMode = \\\\`\n@media \\(prefers-color-scheme: dark\\) \\{\n  body \\{ background-color: #1a1a1a; color: #e5e7eb; \\}\n\\}\n\\\\`;\nfs\\.appendFileSync\\('src/app/globals\\.css', globalsDarkMode\\);\n\" ; npm run build ; node rename-next\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

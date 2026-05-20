@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import JSZip from "jszip";
 import Compressor from "compressorjs";
 import UPNG from "upng-js";
-import { Image as ImageIcon, Download, Settings, Loader2, CheckCircle2, AlertCircle, RefreshCw, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { Image as ImageIcon, Download, Settings, Loader2, CheckCircle2, AlertCircle, RefreshCw, Plus, Trash2, UploadCloud, X, Sun, Moon } from "lucide-react";
 import styles from "./page.module.css";
 
 function bytesToSize(bytes) {
@@ -26,19 +26,42 @@ export default function Home() {
   const [quality, setQuality] = useState(70);
   const [maxSize, setMaxSize] = useState("4000");
   const [suffix, setSuffix] = useState("");
-  const [convertToWebp, setConvertToWebp] = useState(false);
+  const [outputFormat, setOutputFormat] = useState("original");
+  const [keepExif, setKeepExif] = useState(true);
   const [showSettings, setShowSettings] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [processingList, setProcessingList] = useState([]);
   const [results, setResults] = useState([]);
   const [globalError, setGlobalError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [driveLink, setDriveLink] = useState("");
   const [isFetchingDrive, setIsFetchingDrive] = useState(false);
   const [lightboxImg, setLightboxImg] = useState(null);
+  const [compareImg, setCompareImg] = useState(null);
+  const [comparePct, setComparePct] = useState(50);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Check initial dark mode preference
+    if (typeof window !== "undefined") {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+      if (isDark) document.body.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  };
 
   useEffect(() => {
     // Attempt to scrape page on load
@@ -274,18 +297,20 @@ export default function Home() {
       let mimeType = 'auto';
       let finalExt = originalExt;
       
-      if (convertToWebp) {
-        mimeType = 'image/webp';
-        finalExt = 'webp';
+      if (outputFormat !== 'original') {
+        finalExt = outputFormat;
+        mimeType = `image/${outputFormat === 'jpg' ? 'jpeg' : outputFormat}`;
       }
 
-      const isNativePng = originalExt.toLowerCase() === 'png' && !convertToWebp;
+      const isNativePng = finalExt.toLowerCase() === 'png';
 
       new Compressor(blob, {
         quality: quality / 100,
         maxWidth: parseInt(maxSize) || Infinity,
         maxHeight: parseInt(maxSize) || Infinity,
         mimeType: mimeType,
+        checkOrientation: !keepExif,
+        retainExif: keepExif,
         success(result) {
           if (isNativePng) {
             const url = URL.createObjectURL(result);
@@ -333,12 +358,22 @@ export default function Home() {
     setResults([]);
     setProgress(0);
     setGlobalError("");
+    setProcessingList(imagesToProcess.map(img => ({ ...img, status: 'waiting' })));
     
     const zip = new JSZip();
     let successCount = 0;
     const newResults = [];
 
     for (let i = 0; i < imagesToProcess.length; i++) {
+      setProcessingList(prev => {
+        const copy = [...prev];
+        copy[i].status = 'compressing';
+        return copy;
+      });
+
+      // Yield event loop to ensure butter-smooth UI (Simulates Web Worker behavior)
+      await new Promise(r => setTimeout(r, 20));
+
       const imgInfo = imagesToProcess[i];
       
       let blob = imgInfo.file;
@@ -347,6 +382,11 @@ export default function Home() {
       }
       
       if (!blob) {
+        setProcessingList(prev => {
+          const copy = [...prev];
+          copy[i].status = 'error';
+          return copy;
+        });
         setProgress(((i + 1) / pendingImages.length) * 100);
         continue;
       }
@@ -362,17 +402,30 @@ export default function Home() {
         zip.file(safeName, compressedBlob);
         successCount++;
         
-        newResults.push({
+        const resultItem = {
           url: imgInfo.previewUrl,
           previewUrl: imgInfo.file ? imgInfo.previewUrl : URL.createObjectURL(blob),
           filename: safeName,
           originalSize: blob.size,
           newSize: compressedBlob.size,
           blob: compressedBlob
-        });
+        };
+        newResults.push(resultItem);
         setResults([...newResults]);
+
+        setProcessingList(prev => {
+          const copy = [...prev];
+          copy[i].status = 'done';
+          copy[i].resultData = resultItem;
+          return copy;
+        });
       } catch (err) {
         console.error("Compression error for image", i, err);
+        setProcessingList(prev => {
+          const copy = [...prev];
+          copy[i].status = 'error';
+          return copy;
+        });
       }
       
       setProgress(((i + 1) / imagesToProcess.length) * 100);
@@ -447,6 +500,10 @@ export default function Home() {
           <ImageIcon size={24} strokeWidth={1.5} color="#7c3aed" />
           <h1 className={styles.title}>CleanCompress</h1>
         </div>
+        <div style={{flex: 1}} />
+        <button className={styles.themeToggleBtn} onClick={toggleDarkMode}>
+          {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
       </div>
 
       <div className={styles.actionBar}>
@@ -522,13 +579,29 @@ export default function Home() {
           </div>
 
           <div className={styles.settingRow}>
+            <span className={styles.settingLabel}>Output Format</span>
+            <select 
+              value={outputFormat} 
+              onChange={(e) => setOutputFormat(e.target.value)}
+              className={styles.inputField}
+              style={{ cursor: 'pointer' }}
+            >
+              <option value="original">Keep Original</option>
+              <option value="webp">WebP (Recommended)</option>
+              <option value="avif">AVIF (Smallest)</option>
+              <option value="jpg">JPG</option>
+              <option value="png">PNG</option>
+            </select>
+          </div>
+
+          <div className={styles.settingRow}>
             <div className={styles.toggleRow}>
-               <span className={styles.settingLabel}>Convert to WEBP</span>
+               <span className={styles.settingLabel}>Keep EXIF Metadata</span>
                <label className={styles.toggleSwitch}>
                  <input 
                    type="checkbox" 
-                   checked={convertToWebp} 
-                   onChange={(e) => setConvertToWebp(e.target.checked)} 
+                   checked={keepExif} 
+                   onChange={(e) => setKeepExif(e.target.checked)} 
                  />
                  <span className={styles.sliderToggle}></span>
                </label>
@@ -604,7 +677,33 @@ export default function Home() {
           )}
 
           <div className={styles.resultsArea}>
-            {results.map((res, i) => {
+            {processingList.map((item, i) => {
+              const res = item.resultData;
+              const isDone = item.status === 'done' && res;
+              const isCompressingState = item.status === 'compressing';
+              
+              if (!isDone) {
+                return (
+                  <div key={i} className={styles.resultItem}>
+                    {isCompressingState ? <Loader2 size={18} className={`animate-spin ${styles.resultIcon}`} color="#3b82f6" /> : <Loader2 size={18} className={styles.resultIcon} color="#d1d5db" />}
+                    <img 
+                      src={item.previewUrl} 
+                      alt="" 
+                      className={styles.thumbnail} 
+                    />
+                    <div className={styles.resultInfo}>
+                      <div className={styles.filename}>{item.filename}</div>
+                      <div className={styles.processingBarContainer}>
+                        <div className={styles.processingBarFill} style={{ width: isCompressingState ? '70%' : item.status === 'waiting' ? '0%' : '100%' }}></div>
+                      </div>
+                    </div>
+                    <div className={styles.reduction} style={{ color: '#6b7280' }}>
+                      {item.status}
+                    </div>
+                  </div>
+                );
+              }
+
               const diff = res.originalSize - res.newSize;
               const pct = res.originalSize > 0 ? Math.round((diff / res.originalSize) * 100) : 0;
               const isReduced = diff >= 0;
@@ -627,6 +726,14 @@ export default function Home() {
                   <div className={`${styles.reduction} ${isReduced ? styles.reductionGood : styles.reductionBad}`} style={{ marginRight: '8px' }}>
                     {isReduced ? `-${pct}%` : `+${Math.abs(pct)}%`}
                   </div>
+                  <button 
+                    className={styles.downloadIconBtn} 
+                    onClick={() => setCompareImg({ orig: item.previewUrl, comp: URL.createObjectURL(res.blob) })}
+                    title="Compare Before & After"
+                    style={{ marginRight: '4px' }}
+                  >
+                    <ImageIcon size={16} />
+                  </button>
                   <button 
                     className={styles.downloadIconBtn} 
                     onClick={() => triggerDownload(res.blob, res.filename)} 
@@ -675,6 +782,53 @@ export default function Home() {
             <X size={24} color="white" strokeWidth={1.5} />
           </button>
           <img src={lightboxImg} alt="Preview" className={styles.lightboxImage} />
+        </div>
+      )}
+
+      {compareImg && (
+        <div className={styles.lightbox} style={{flexDirection: 'column'}} onClick={() => { setCompareImg(null); setComparePct(50); }}>
+          <button className={styles.lightboxClose} onClick={() => { setCompareImg(null); setComparePct(50); }}>
+            <X size={24} color="white" strokeWidth={1.5} />
+          </button>
+          
+          <h2 style={{color: 'white', marginBottom: '20px', zIndex: 10001}}>Before / After Preview</h2>
+          <div 
+            style={{position: 'relative', width: '100%', height: '70vh', background: '#111827', borderRadius: '8px'}}
+            onClick={e => e.stopPropagation()}
+            onMouseMove={(e) => {
+               const rect = e.currentTarget.getBoundingClientRect();
+               const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+               setComparePct((x / rect.width) * 100);
+            }}
+          >
+            {/* Compressed (Background) */}
+            <img 
+              src={compareImg.comp} 
+              alt="Compressed" 
+              style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain'}} 
+            />
+            {/* Original (Clipped Foreground) */}
+            <img 
+              src={compareImg.orig} 
+              alt="Original" 
+              style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain',
+                clipPath: `inset(0 ${100 - comparePct}% 0 0)`
+              }} 
+            />
+            {/* The slider handle line */}
+            <div style={{position: 'absolute', top: 0, left: `${comparePct}%`, bottom: 0, width: '2px', background: 'white', zIndex: 10, cursor: 'ew-resize', pointerEvents: 'none'}}>
+               <div style={{position: 'absolute', top: '50%', left: '-14px', width: '30px', height: '30px', background: 'white', borderRadius: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.3)'}}>
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                   <polyline points="15 18 9 12 15 6"></polyline>
+                 </svg>
+               </div>
+            </div>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', color: 'white', marginTop: '10px', padding: '0 10px', zIndex: 10001, fontWeight: 'bold'}}>
+             <span>Original (Left)</span>
+             <span>Compressed (Right)</span>
+          </div>
         </div>
       )}
 

@@ -455,6 +455,25 @@ input:checked + .sliderToggle:before {
   color: #1d4ed8;
 }
 
+.processingBarContainer {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.processingBarFill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.3s ease-in-out;
+}
+
+:global(.dark) .processingBarContainer { background: #374151; }
+:global(.dark) .processingBarFill { background: #60a5fa; }
+
 .lightbox {
   position: fixed;
   top: 0;
@@ -518,3 +537,54 @@ input:checked + .sliderToggle:before {
   color: #2563eb;
   text-decoration: underline;
 }
+
+.themeToggleBtn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.themeToggleBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+:global(.dark) .themeToggleBtn {
+  color: #9ca3af;
+}
+
+:global(.dark) .themeToggleBtn:hover {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+:global(.dark) .container { background-color: #111827; color: #f3f4f6; }
+:global(.dark) .header { background: #1f2937; border-bottom: 1px solid #374151; color: #a78bfa; }
+:global(.dark) .settingsPanel { background: #111827; border-bottom: 1px solid #374151; }
+:global(.dark) .settingLabel { color: #9ca3af; }
+:global(.dark) .inputField { background: #374151; color: white; border: 1px solid #4b5563; }
+:global(.dark) .dropzone { background: #1f2937; border-color: #4b5563; }
+:global(.dark) .dropzone p { color: #9ca3af; }
+:global(.dark) .dropzone:hover { background: #374151; border-color: #3b82f6; }
+:global(.dark) .pendingArea { background: #111827; }
+:global(.dark) .resultItem { border-bottom: 1px solid #374151; background: #111827; }
+:global(.dark) .resultsArea { background: #111827; margin: 0; }
+:global(.dark) .thumbnail { border: 1px solid #4b5563; background: #374151; }
+:global(.dark) .button { background-color: #374151; color: #d1d5db; }
+:global(.dark) .button:hover { background-color: #4b5563; }
+:global(.dark) .summaryBanner { background-color: #064e3b; color: #ccfbf1; }
+:global(.dark) .summaryBannerError { background-color: #7f1d1d; color: #fee2e2; }
+:global(.dark) .creditFooter { background-color: #1f2937; border-top: 1px solid #374151; color: #9ca3af; }
+:global(.dark) .creditFooter a { color: #60a5fa; }
+:global(.dark) .actionBar { background: #1f2937; border-bottom: 1px solid #374151; }
+:global(.dark) .driveImportBox { background: #111827; border-bottom: 1px solid #374151; }
+:global(.dark) .actionBtn { background: #374151; color: #d1d5db; border: 1px solid #4b5563; }
+:global(.dark) .actionBtn:hover { background: #4b5563; color: white; }
+:global(.dark) .activeSettings { background: #4f46e5; color: white; border-color: #6366f1; }
